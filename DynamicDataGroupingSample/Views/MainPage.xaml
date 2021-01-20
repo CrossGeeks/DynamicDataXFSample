@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DynamicDataGroupingSample.MainPage"
+             xmlns:local="clr-namespace:DynamicDataGroupingSample"
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             Title="My Restaurants"
+             ios:Page.UseSafeArea="true">
+    <ContentPage.BindingContext>
+        <local:MainViewModel/>
+    </ContentPage.BindingContext>
+  <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add" Command="{Binding AddCommand,Mode=OneTime}"/>
+    </ContentPage.ToolbarItems>
+    <ListView  x:Name="RestaurantsList"
+               ItemsSource="{Binding Restaurants}">
+        <ListView.ItemTemplate>
+            <DataTemplate x:DataType="local:Restaurant">
+                <TextCell Text="{Binding Name}"
+                            Detail="{Binding Type}" >
+                        
+                    <TextCell.ContextActions>
+                        <MenuItem Text="Delete"
+                                    IsDestructive="True"
+                                    Command="{Binding BindingContext.DeleteCommand, Mode=OneTime, Source={x:Reference RestaurantsList}}"
+                                    CommandParameter="{Binding}" />
+                    </TextCell.ContextActions>
+                    </TextCell>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
+</ContentPage>
