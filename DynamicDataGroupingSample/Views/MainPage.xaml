@@ -11,22 +11,38 @@
     </ContentPage.BindingContext>
   <ContentPage.ToolbarItems>
         <ToolbarItem Text="Add" Command="{Binding AddCommand,Mode=OneTime}"/>
+        <ToolbarItem Text="Sort" Command="{Binding SortCommand,Mode=OneTime}"/>
     </ContentPage.ToolbarItems>
-    <ListView  x:Name="RestaurantsList"
-               ItemsSource="{Binding Restaurants}">
-        <ListView.ItemTemplate>
-            <DataTemplate x:DataType="local:Restaurant">
-                <TextCell Text="{Binding Name}"
-                            Detail="{Binding Type}" >
+    <StackLayout>
+         <Picker Title="Choose Country"
+                 x:Name="picker"
+                 SelectedItem="{Binding SelectedCountryFilter}">
+                <Picker.Items>
+                    <x:String>All</x:String>
+                       <x:String>United States</x:String>
+                       <x:String>Venezuela</x:String>
+                       <x:String>Dominican Republic</x:String>
+                        <x:String>Colombia</x:String>
+                 </Picker.Items>
+        </Picker>
+
+        <SearchBar Text="{Binding SearchText}" />
+        <ListView  x:Name="RestaurantsList"
+                   ItemsSource="{Binding Restaurants}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:Restaurant">
+                    <TextCell Text="{Binding Name}"
+                                Detail="{Binding Type}" >
                         
-                    <TextCell.ContextActions>
-                        <MenuItem Text="Delete"
-                                    IsDestructive="True"
-                                    Command="{Binding BindingContext.DeleteCommand, Mode=OneTime, Source={x:Reference RestaurantsList}}"
-                                    CommandParameter="{Binding}" />
-                    </TextCell.ContextActions>
-                    </TextCell>
-            </DataTemplate>
-        </ListView.ItemTemplate>
-    </ListView>
+                        <TextCell.ContextActions>
+                            <MenuItem Text="Delete"
+                                        IsDestructive="True"
+                                        Command="{Binding BindingContext.DeleteCommand, Mode=OneTime, Source={x:Reference RestaurantsList}}"
+                                        CommandParameter="{Binding}" />
+                        </TextCell.ContextActions>
+                        </TextCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+      </ListView>
+    </StackLayout>
 </ContentPage>

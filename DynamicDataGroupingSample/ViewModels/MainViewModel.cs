@@ -4,12 +4,13 @@ using System.Reactive.Linq;
 using DynamicData;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using Xamarin.Forms;
+using ReactiveUI;
+using System.Reactive;
+using DynamicData.Binding;
 
 namespace DynamicDataGroupingSample
 {
-    public class MainViewModel : IDisposable
+    public class MainViewModel : ReactiveObject, IDisposable
     {
         public MainViewModel()
         {
@@ -31,14 +32,46 @@ namespace DynamicDataGroupingSample
                 new Restaurant("Cielo","Formal","International","Colombia"),
             });
 
-            _cleanUp = _sourceCache.Connect()
-                        .RefCount()
-                        .Bind(out _restaurants)
-                        .DisposeMany()
-                        .Subscribe();
+            //Search logic
+            Func<Restaurant, bool> restaurantFilter(string text) => restaurant =>
+            {
+                return string.IsNullOrEmpty(text) || restaurant.Name.ToLower().Contains(text.ToLower()) || restaurant.Type.ToLower().Contains(text.ToLower());
+            };
 
-            AddCommand = new Command(async() => await ExecuteAdd());
-            DeleteCommand = new Command<Restaurant>(ExecuteRemove);
+            var filterPredicate = this.WhenAnyValue(x => x.SearchText)
+                                      .Throttle(TimeSpan.FromMilliseconds(250), RxApp.TaskpoolScheduler)
+                                      .DistinctUntilChanged()
+                                      .Select(restaurantFilter);
+
+            //Filter logic
+            Func<Restaurant, bool> countryFilter(string country) => restaurant =>
+            {
+                return country == "All" || country == restaurant.Country;
+            };
+
+            var countryPredicate = this.WhenAnyValue(x => x.SelectedCountryFilter)
+                                       .Select(countryFilter);
+
+            //sort
+            var sortPredicate = this.WhenAnyValue(x => x.SortBy)
+                                    .Select(x => x == "Type" ? SortExpressionComparer<Restaurant>.Ascending(a => a.Type) : SortExpressionComparer<Restaurant>.Ascending(a => a.Name));
+
+            _cleanUp = _sourceCache.Connect()
+            .RefCount()
+            .Filter(countryPredicate)
+            .Filter(filterPredicate)
+            .Sort(sortPredicate)
+            .Bind(out _restaurants)
+            .DisposeMany()
+            .Subscribe();
+
+            //Set default values
+            SelectedCountryFilter = "All";
+            SortBy = "Name";
+
+            AddCommand = ReactiveCommand.CreateFromTask(async() => await ExecuteAdd());
+            DeleteCommand = ReactiveCommand.Create<Restaurant>(ExecuteRemove);
+            SortCommand = ReactiveCommand.CreateFromTask(ExecuteSort);
         }
 
         private void ExecuteRemove(Restaurant restaurant)
@@ -58,6 +91,15 @@ namespace DynamicDataGroupingSample
             });
         }
 
+        private async Task ExecuteSort()
+        {
+            var sort = await App.Current.MainPage.DisplayActionSheet("Sort by", "Cancel", null, buttons: new string[] { "Name", "Type" });
+            if (sort != "Cancel")
+            {
+                SortBy = sort;
+            }
+        }
+
         public void Dispose()
         {
             _cleanUp.Dispose();
@@ -65,11 +107,33 @@ namespace DynamicDataGroupingSample
 
         public ReadOnlyObservableCollection<Restaurant> Restaurants => _restaurants;
 
-        public ICommand AddCommand { get; set; }
-        public ICommand DeleteCommand { get; }
+        public string SearchText
+        {
+            get => _searchText;
+            set => this.RaiseAndSetIfChanged(ref _searchText, value);
+        }
+
+        public string SelectedCountryFilter
+        {
+            get => _selectedCountryFilter;
+            set => this.RaiseAndSetIfChanged(ref _selectedCountryFilter, value);
+        }
+
+        private string SortBy
+        {
+            get => _sortBy;
+            set => this.RaiseAndSetIfChanged(ref _sortBy, value);
+        }
+
+        public ReactiveCommand<Unit, Unit> AddCommand { get; set; }
+        public ReactiveCommand<Restaurant, Unit> DeleteCommand { get; }
+        public ReactiveCommand<Unit, Unit> SortCommand { get; }
 
         private SourceCache<Restaurant, string> _sourceCache = new SourceCache<Restaurant, string>(x => x.Id);
         private readonly ReadOnlyObservableCollection<Restaurant> _restaurants;
+        private string _searchText;
+        private string _selectedCountryFilter;
+        private string _sortBy;
 
         private readonly IDisposable _cleanUp;
     }
