@@ -17,6 +17,6 @@ Check the full article here[https://www.xamboy.com/2021/01/20/using-dynamic-data
 <p align="center">
 <img height:"800" src="sortfiltersample.gif" />
 
-Check the full article here[https://www.xamboy.com].
+Check the full article here[https://www.xamboy.com/2021/01/25/filtering-and-sorting-with-dynamic-data-in-xamarin-forms-part-2/].
 
 
