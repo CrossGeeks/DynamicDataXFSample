@@ -37,7 +37,7 @@ namespace DynamicDataGroupingSample
                         .DisposeMany()
                         .Subscribe();
 
-            AddCommand = new Command(async() => await ExecuteAdd());
+            AddCommand = new Command(async () => await ExecuteAdd());
             DeleteCommand = new Command<Restaurant>(ExecuteRemove);
         }
 
@@ -47,7 +47,7 @@ namespace DynamicDataGroupingSample
             {
                 update.Remove(restaurant);
             });
-         }
+        }
 
         private async Task ExecuteAdd()
         {
