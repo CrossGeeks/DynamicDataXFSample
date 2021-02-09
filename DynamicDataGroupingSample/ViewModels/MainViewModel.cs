@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ReactiveUI;
 using System.Reactive;
 using DynamicData.Binding;
+using DynamicDataGroupingSample.Helpers;
 
 namespace DynamicDataGroupingSample
 {
@@ -57,10 +58,10 @@ namespace DynamicDataGroupingSample
                                     .Select(x => x == "Type" ? SortExpressionComparer<Restaurant>.Ascending(a => a.Type) : SortExpressionComparer<Restaurant>.Ascending(a => a.Name));
 
             _cleanUp = _sourceCache.Connect()
-            .RefCount()
             .Filter(countryPredicate)
-            .Filter(filterPredicate)
-            .Sort(sortPredicate)
+            .Group(x => x.Category)
+            .Transform(g => new ObservableGroupedCollection<string, Restaurant, string>(g, filterPredicate, sortPredicate))
+            .Sort(SortExpressionComparer<ObservableGroupedCollection<string, Restaurant, string>>.Ascending(a => a.Key))
             .Bind(out _restaurants)
             .DisposeMany()
             .Subscribe();
@@ -105,7 +106,7 @@ namespace DynamicDataGroupingSample
             _cleanUp.Dispose();
         }
 
-        public ReadOnlyObservableCollection<Restaurant> Restaurants => _restaurants;
+        public ReadOnlyObservableCollection<ObservableGroupedCollection<string, Restaurant, string>> RestaurantsGrouped => _restaurants;
 
         public string SearchText
         {
@@ -130,7 +131,7 @@ namespace DynamicDataGroupingSample
         public ReactiveCommand<Unit, Unit> SortCommand { get; }
 
         private SourceCache<Restaurant, string> _sourceCache = new SourceCache<Restaurant, string>(x => x.Id);
-        private readonly ReadOnlyObservableCollection<Restaurant> _restaurants;
+        private readonly ReadOnlyObservableCollection<ObservableGroupedCollection<string, Restaurant, string>> _restaurants;
         private string _searchText;
         private string _selectedCountryFilter;
         private string _sortBy;

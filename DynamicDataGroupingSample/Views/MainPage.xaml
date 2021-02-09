@@ -28,7 +28,9 @@
 
         <SearchBar Text="{Binding SearchText}" />
         <ListView  x:Name="RestaurantsList"
-                   ItemsSource="{Binding Restaurants}">
+                   ItemsSource="{Binding RestaurantsGrouped}"
+                   GroupDisplayBinding="{Binding Key}"
+                   IsGroupingEnabled="True">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:Restaurant">
                     <TextCell Text="{Binding Name}"
