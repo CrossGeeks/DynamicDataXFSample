@@ -26,6 +26,6 @@ Gruping
 <p align="center">
 <img height:"800" src="groupingsample.gif" />
 
-Check the full article here[https://www.xamboy.com/].
+Check the full article here[https://www.xamboy.com/2021/02/10/grouping-with-dynamic-data-in-xamarin-forms-part-3/].
 
 
