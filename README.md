@@ -2,7 +2,7 @@
 
 This is the Sample of the serie about about DynamicData. 
 
-This coverts: 
+It covers: 
 - Simple List of Restaurants
 - Add
 - Delete
